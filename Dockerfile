@@ -25,7 +25,7 @@ COPY . .
 
 # 4. ใช้ไฟล์คอนฟิกจาก docker/nginx/conf.d/app.conf ไปทับค่าเริ่มต้นของ Nginx
 # (แก้ปัญหาไฟล์ซ้ำ โดยเจาะจงใช้ไฟล์ที่ริวเพิ่งแก้ล่าสุด)
-COPY docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
+COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
 # 5. รัน Composer เพื่อติดตั้ง Dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

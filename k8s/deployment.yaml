@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svd-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svd
+  template:
+    metadata:
+      labels:
+        app: svd
+    spec:
+      containers:
+      # 1. Image งานของริว (Nginx + PHP-FPM + Code)
+      - name: svd-app
+        image: yannaphatba/svd-app:v1
+        ports:
+        - containerPort: 9000
+
+      # 2. Image Database (MySQL สำเร็จรูปตามสั่งอาจารย์)
+      - name: svd-db
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "Asdf1234"
+        - name: MYSQL_DATABASE
+          value: "vehicle_system"
+        ports:
+        - containerPort: 3306

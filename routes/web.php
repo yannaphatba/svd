@@ -13,11 +13,11 @@ use App\Http\Controllers\MajorController;
 
 // 1. Redirect หน้าแรก ให้วิ่งไปที่ /svd/login อัตโนมัติ
 Route::get('/', function () {
-    return redirect('/svd/login');
+    return redirect('/sdv/login');
 });
 
-// ✅ 2. สร้างกลุ่มใหญ่ ครอบทั้งหมดด้วย prefix 'svd'
-Route::prefix('svd')->group(function () {
+// ✅ 2. สร้างกลุ่มใหญ่ ครอบทั้งหมดด้วย prefix 'sdv'
+Route::prefix('sdv')->group(function () {
 
     // --- Guest Routes (ใครก็เข้าได้ เช่น หน้า Login) ---
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

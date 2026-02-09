@@ -14,24 +14,27 @@ RUN apk add --no-cache \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql gd zip bcmath
 
-# ก๊อปคอนฟิก Nginx จากหน้าแรกของ Repo (ตำแหน่งใหม่ที่ริววางไฟล์ไว้)
-COPY docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
-
-# สร้างโฟลเดอร์ sdv เพื่อรองรับ URL มหาลัย
+# 1. สร้างโฟลเดอร์สำหรับโปรเจกต์ (sdv)
 RUN mkdir -p /var/www/html/sdv
 
-# ก๊อปปี้ไฟล์ทั้งหมดจากหน้าแรก เข้าไปที่ sdv
+# 2. ตั้งค่าพื้นที่ทำงานหลัก
 WORKDIR /var/www/html/sdv
+
+# 3. ก๊อปปี้ไฟล์ทั้งหมดจากหน้าแรกของ Repo เข้าไปใน sdv
 COPY . .
 
-# รัน Composer
+# 4. ใช้ไฟล์คอนฟิกจาก docker/nginx/conf.d/app.conf ไปทับค่าเริ่มต้นของ Nginx
+# (แก้ปัญหาไฟล์ซ้ำ โดยเจาะจงใช้ไฟล์ที่ริวเพิ่งแก้ล่าสุด)
+COPY docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
+
+# 5. รัน Composer เพื่อติดตั้ง Dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# จัดการ Permissions
+# 6. จัดการสิทธิ์การเข้าถึงไฟล์ (Permissions)
 RUN chown -R www-data:www-data /var/www/html/sdv
 
-# สคริปต์รัน Nginx และ PHP-FPM
+# 7. สคริปต์สำหรับเริ่มต้นระบบ (PHP และ Nginx)
 RUN echo "#!/bin/sh" > /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

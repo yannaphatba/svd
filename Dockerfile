@@ -1,10 +1,18 @@
 FROM php:8.2-fpm-alpine
 
-# Install PDO MySQL
-RUN docker-php-ext-install pdo pdo_mysql
-
 # Install Nginx
-RUN apk add --no-cache nginx
+RUN apk add --no-cache \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    nginx
+    
+# Install PDO MySQL
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql gd zip bcmath
 
 # Copy Nginx config
 COPY nginx/default.conf /etc/nginx/http.d/default.conf

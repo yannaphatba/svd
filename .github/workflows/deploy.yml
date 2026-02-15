@@ -42,10 +42,10 @@ jobs:
 
       - name: Deploy to K8s
         run: |
-          # 1. เปลี่ยน placeholder ให้เป็นชื่อ Image พร้อมเลขเวอร์ชันจริง
-          sed -i "s|ghcr.io/placeholder:latest|${{ env.IMAGE_NAME }}:v${{ github.run_number }}|g" k8s/deployment.yaml
+          # แก้บรรทัดนี้ให้ค้นหาชื่อ Image เต็มๆ ตามที่ริวเขียนไว้ใน deployment.yaml ครับ
+          sed -i "s|ghcr.io/yannaphatba/sdv:placeholder|${{ env.IMAGE_NAME }}:v${{ github.run_number }}|g" k8s/deployment.yaml
 
-          # 2. สั่ง Apply ไฟล์คอนฟิกไปยัง Namespace sdv
+          # 2. สั่ง Apply ต่อได้เลย...
           kubectl apply -f k8s/deployment.yaml \
             --namespace=sdv \
             --insecure-skip-tls-verify=true \
@@ -61,8 +61,7 @@ jobs:
             --namespace=sdv \
             --insecure-skip-tls-verify=true
 
-          # แก้ไข Step 5 ล่างสุด
-      # Step 5: แก้ไขให้ชี้ไปที่ artisan หน้าแรกสุด
+      # Step 5: ตัดคำว่า /sdv/ ออก เพราะไฟล์ artisan อยู่ที่หน้าแรกสุดแล้วครับ
       - name: Clear Laravel Cache
         run: |
           kubectl exec deployment/php-app -n sdv -- php /var/www/html/artisan route:clear

@@ -1,4 +1,4 @@
-# 1. Database Storage
+# 1. Database Storage (MySQL PVC)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -18,7 +18,7 @@ spec:
   ports: [{ port: 3306 }]
   selector: { app: mysql }
 ---
-# 3. MySQL Deployment (แก้ตรงนี้ให้กลับเป็น mysql:8.0)
+# 3. MySQL Deployment (ต้องใช้ image mysql:8.0 เท่านั้น!)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: mysql:8.0  # ต้องใช้ตัวนี้เท่านั้น ห้ามเป็น placeholder
+        image: mysql:8.0  # <--- ห้ามแก้เป็น placeholder เด็ดขาด!
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: "mydbpassword"
@@ -45,7 +45,7 @@ spec:
       - name: data
         persistentVolumeClaim: { claimName: mysql-pvc }
 ---
-# 4. PHP-Nginx Application Service
+# 4. PHP-Nginx Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -55,7 +55,7 @@ spec:
   ports: [{ port: 80 }]
   selector: { app: php }
 ---
-# 5. PHP-Nginx Application Deployment
+# 5. PHP-Nginx Deployment (งานของริวตัวจริงอยู่ที่นี่)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,10 +68,10 @@ spec:
     spec:
       containers:
       - name: php-nginx
-        image: ghcr.io/yannaphatba/sdv:placeholder
+        image: ghcr.io/yannaphatba/sdv:placeholder # <--- ตัวนี้แหละที่รอให้ GitHub มาเปลี่ยนชื่อ
         imagePullPolicy: Always
         resources:
-          requests: { cpu: "250m", memory: "512Mi" } # เพิ่ม RAM ให้ตามที่คุยกัน
+          requests: { cpu: "250m", memory: "512Mi" }
           limits: { cpu: "500m", memory: "1Gi" }
         ports: [{ containerPort: 80 }]
         env:
@@ -86,7 +86,7 @@ spec:
         - name: DB_PASSWORD
           value: "mydbpassword"
 ---
-# 6. Ingress (Web Access)
+# 6. Ingress (ทางเข้าเว็บ)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -94,7 +94,6 @@ metadata:
   namespace: sdv
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
-    # บรรทัดนี้ถูกต้องแล้ว มหาลัยจะใช้ตัวนี้ตัด /sdv ออกให้
     traefik.ingress.kubernetes.io/router.middlewares: sdv-stripprefix@kubernetescrd
 spec:
   ingressClassName: traefik

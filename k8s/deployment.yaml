@@ -1,4 +1,4 @@
-# 1. Database Storage (Persistent Volume Claim)
+# 1. Database Storage
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -8,7 +8,7 @@ spec:
   accessModes: [ReadWriteOnce]
   resources: { requests: { storage: 2Gi } }
 ---
-# 2. MySQL Service (Internal)
+# 2. MySQL Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,7 +18,7 @@ spec:
   ports: [{ port: 3306 }]
   selector: { app: mysql }
 ---
-# 3. MySQL Deployment
+# 3. MySQL Deployment (แก้ตรงนี้ให้กลับเป็น mysql:8.0)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,16 +30,8 @@ spec:
     metadata: { labels: { app: mysql } }
     spec:
       containers:
-      - name: php-nginx
-        image: ghcr.io/yannaphatba/sdv:placeholder
-        imagePullPolicy: Always
-        resources:
-          requests: 
-            cpu: "250m"
-            memory: "512Mi"  
-          limits: 
-            cpu: "500m"
-            memory: "1Gi"   
+      - name: mysql
+        image: mysql:8.0  # ต้องใช้ตัวนี้เท่านั้น ห้ามเป็น placeholder
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: "mydbpassword"
@@ -63,8 +55,6 @@ spec:
   ports: [{ port: 80 }]
   selector: { app: php }
 ---
-# [ส่วนที่ 1-4 เหมือนเดิมของริวครับ]
-
 # 5. PHP-Nginx Application Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -78,12 +68,11 @@ spec:
     spec:
       containers:
       - name: php-nginx
-        # ใส่ placeholder ไว้ให้ตรงกับที่ในไฟล์ .github/workflows/deploy.yml จะมา sed เปลี่ยนนะครับ
         image: ghcr.io/yannaphatba/sdv:placeholder
         imagePullPolicy: Always
         resources:
-          requests: { cpu: "250m", memory: "256Mi" }
-          limits: { cpu: "500m", memory: "512Mi" }
+          requests: { cpu: "250m", memory: "512Mi" } # เพิ่ม RAM ให้ตามที่คุยกัน
+          limits: { cpu: "500m", memory: "1Gi" }
         ports: [{ containerPort: 80 }]
         env:
         - name: DB_CONNECTION
@@ -105,7 +94,7 @@ metadata:
   namespace: sdv
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
-    # เพิ่มบรรทัดนี้เพื่อให้เข้าผ่าน /sdv ได้สมบูรณ์
+    # บรรทัดนี้ถูกต้องแล้ว มหาลัยจะใช้ตัวนี้ตัด /sdv ออกให้
     traefik.ingress.kubernetes.io/router.middlewares: sdv-stripprefix@kubernetescrd
 spec:
   ingressClassName: traefik

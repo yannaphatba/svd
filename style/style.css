@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* ========== LOGIN PAGE ========== */
+.login-container {
+    width: 350px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-in-out;
+    margin: auto;
+    margin-top: 10vh;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+input[type="text"], input[type="password"], input[type="tel"], select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 6px rgba(0,123,255,0.4);
+}
+
+button, .btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+/* ปุ่มมาตรฐาน (ฟ้า) */
+button, .btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+button:hover, .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #003d80);
+    transform: scale(1.02);
+}
+
+/* ปุ่มบันทึก */
+.btn.save {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: #fff;
+}
+.btn.save:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    transform: scale(1.02);
+}
+
+/* ปุ่มล้าง */
+.btn.cancel {
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+    color: #fff;
+}
+.btn.cancel:hover {
+    background: linear-gradient(135deg, #b02a37, #842029);
+    transform: scale(1.02);
+}
+
+/* ปุ่มออกจากระบบ */
+.btn.logout {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: #fff;
+}
+.btn.logout:hover {
+    background: linear-gradient(135deg, #495057, #343a40);
+    transform: scale(1.02);
+}
+
+/* ปุ่มใน student_view จัด layout */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.extra-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+.extra-buttons a {
+    text-decoration: none;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.extra-buttons a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

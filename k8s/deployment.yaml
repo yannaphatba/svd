@@ -91,9 +91,9 @@ spec:
         - name: DB_DATABASE
           value: "mydb"
         - name: DB_USERNAME
-          value: "root"
+          value: "myuser"
         - name: DB_PASSWORD
-          value: "mydbpassword"
+          value: "mypassword"
 ---
 # 6. Ingress (ทางเข้าเว็บ)
 apiVersion: networking.k8s.io/v1

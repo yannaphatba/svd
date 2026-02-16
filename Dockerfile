@@ -3,8 +3,12 @@ RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev zip 
 RUN docker-php-ext-install pdo pdo_mysql gd zip bcmath
 
 WORKDIR /var/www/html
-COPY . .
-COPY nginx/default.conf /etc/nginx/http.d/default.conf
+
+# 1. ก๊อปปี้จากโฟลเดอร์ src ที่ริวเพิ่งจัดของเสร็จ
+COPY src/ .
+
+# 2. ก๊อปปี้คอนฟิก Nginx จากพิกัดจริง
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs

@@ -1,33 +1,36 @@
 FROM php:8.3-fpm-alpine
 
-# ติดตั้ง Extension ที่จำเป็น
+# ติดตั้ง Library พื้นฐาน
 RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev zip unzip nginx
 RUN docker-php-ext-install pdo pdo_mysql gd zip bcmath
 
-# --- จุดที่ต้องแก้ให้ละเอียด ---
-# 1. ตั้งค่า WORKDIR ไปที่จุดที่แอปจะรันจริง
+# 1. ตั้งหลักที่โฟลเดอร์ src
 WORKDIR /var/www/html/src
 
-# 2. ก๊อปปี้เฉพาะเนื้อหาในโฟลเดอร์ src มาวางที่ /var/www/html/src
-# เพื่อให้ไฟล์ .env, artisan, และ composer.json อยู่ชั้นเดียวกันเป๊ะๆ
+# 2. ก๊อปปี้ไฟล์จาก src ในเครื่องริว มาลงที่ /var/www/html/src ใน Docker
+# (เพื่อให้ .env และ artisan อยู่ถูกที่)
 COPY src/ .
 
-# 3. ก๊อปปี้คอนฟิก Nginx (อันนี้อยู่นอก src ต้องระบุ path ให้ถูก)
+# 3. จัดการเรื่อง .env (ถ้าไม่มีบน GitHub ให้ก๊อปจาก example)
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# 4. ก๊อปปี้ Config Nginx (ไฟล์นี้อยู่นอก src)
 COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
-# 4. ติดตั้ง Composer (รันใน WORKDIR /var/www/html/src)
+# 5. ติดตั้ง Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# 5. ตั้งค่า Permissions ให้ Laravel เขียนไฟล์ได้
-RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/src/storage /var/www/html/src/bootstrap/cache
-RUN chmod -R 775 /var/www/html/src/storage /var/www/html/src/bootstrap/cache
+# 6. สร้าง "บ้านเปล่า" สำหรับเก็บรูป และตั้งสิทธิ์ให้ Laravel เขียนไฟล์ได้
+RUN mkdir -p storage/app/public/Profiles storage/app/public/Vehicles \
+    storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/src/storage /var/www/html/src/bootstrap/cache && \
+    chmod -R 775 /var/www/html/src/storage /var/www/html/src/bootstrap/cache
 
-# 6. สร้าง Symbolic Link
+# 7. เชื่อมโยงโฟลเดอร์เก็บรูป
 RUN php artisan storage:link
 
-# 7. Start Script
+# 8. Start Script
 RUN echo "#!/bin/sh" > /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

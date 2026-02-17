@@ -1,30 +1,31 @@
 FROM php:8.3-fpm-alpine
+
+# ติดตั้ง Extension ที่จำเป็น
 RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev zip unzip nginx
 RUN docker-php-ext-install pdo pdo_mysql gd zip bcmath
 
-# บอกหุ่นยนต์ว่า "บ้านของโค้ดเราอยู่ในโฟลเดอร์ src นะ"
+# 1. ตั้งค่าโฟลเดอร์ทำงานหลักไปที่โฟลเดอร์ src ของโปรเจกต์
 WORKDIR /var/www/html/src
 
-# 1. ก๊อปปี้ทุกอย่างจากข้างนอก (รวมถึงโฟลเดอร์ src ที่มีไฟล์ครบแล้ว) เข้าไปที่ /var/www/html
+# 2. ก๊อปปี้ไฟล์ทั้งหมดเข้าไป (เพื่อให้โครงสร้างในตู้คอนเทนเนอร์ตรงกับที่เราตั้งใน Nginx)
 COPY . /var/www/html
 
-# 2. ก๊อปปี้คอนฟิก Nginx จากพิกัด nginx/default.conf (ตามรูป image_a6bc83.png)
+# 3. ก๊อปปี้คอนฟิก Nginx (ไฟล์นี้สำคัญมาก ต้องแก้ตามที่ผมบอกก่อนหน้านี้ด้วยนะ)
 COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
+# 4. ติดตั้ง Composer และ Dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# ตอนนี้ WORKDIR เราอยู่ใน src แล้ว มันจะเจอไฟล์ composer.json และ artisan แน่นอนครับริว!
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# --- จุดสำคัญ: เชื่อมโยงรูปภาพ นศ. (Profiles/Vehicles) ---
+# 5. ตั้งค่า Permissions ให้ถูกต้อง (แก้จากเดิมที่ชี้แค่บางโฟลเดอร์ ให้ครอบคลุมจุดที่ Laravel ต้องเขียนไฟล์)
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/src/storage /var/www/html/src/bootstrap/cache
+RUN chmod -R 775 /var/www/html/src/storage /var/www/html/src/bootstrap/cache
+
+# 6. สร้าง Symbolic Link สำหรับเก็บรูปภาพ
 RUN php artisan storage:link
 
-# ตั้งสิทธิ์ให้ระบบ "บันทึกรูปใหม่" และเข้าถึงไฟล์ได้
-RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html/src && \
-    chmod -R 775 storage bootstrap/cache
-# ---------------------------------------
-
+# 7. Script สำหรับรันทั้ง PHP-FPM และ Nginx
 RUN echo "#!/bin/sh" > /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

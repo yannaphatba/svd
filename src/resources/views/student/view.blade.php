@@ -110,7 +110,7 @@
                             {{-- 1. ส่วนคณะ --}}
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small">คณะ</label>
-                                <select name="faculty_id" class="form-select lockable bg-light" disabled>
+                                <select name="faculty_id" class="form-select lockable bg-light js-searchable" data-placeholder="-- เลือกคณะ --" disabled>
                                     <option value="">-- เลือกคณะ --</option>
                                     @foreach($faculties as $f)
                                     <option value="{{ $f->id }}" {{ $student->faculty_id == $f->id ? 'selected' : '' }}>{{ $f->name }}</option>
@@ -125,7 +125,7 @@
                             {{-- 2. ส่วนสาขา --}}
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small">สาขา</label>
-                                <select name="major_id" class="form-select lockable bg-light" disabled>
+                                <select name="major_id" class="form-select lockable bg-light js-searchable" data-placeholder="-- เลือกสาขา --" disabled>
                                     <option value="">-- เลือกสาขา --</option>
                                     @foreach($majors as $m)
                                     <option value="{{ $m->id }}" {{ $student->major_id == $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
@@ -140,7 +140,7 @@
                             {{-- 3. ส่วนอาจารย์ที่ปรึกษา --}}
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small">อาจารย์ที่ปรึกษา</label>
-                                <select name="advisor_id" class="form-select lockable bg-light" disabled>
+                                <select name="advisor_id" class="form-select lockable bg-light js-searchable" data-placeholder="-- เลือกอาจารย์ --" disabled>
                                     <option value="">-- เลือกอาจารย์ --</option>
                                     @foreach($advisors as $adv)
                                     <option value="{{ $adv->id }}" {{ $student->advisor_id == $adv->id ? 'selected' : '' }}>
@@ -296,6 +296,25 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
+        const initSearchSelects = () => {
+            if (typeof $ === "undefined" || !$.fn.select2) return;
+
+            $(".js-searchable").each(function() {
+                const $select = $(this);
+
+                if ($select.hasClass("select2-hidden-accessible")) {
+                    return;
+                }
+
+                $select.select2({
+                    theme: "bootstrap-5",
+                    width: "100%",
+                    placeholder: $select.data("placeholder") || "",
+                    allowClear: true,
+                });
+            });
+        };
+
         const form = document.getElementById("studentForm");
         const editBtn = document.getElementById("editBtn");
         const saveBtn = document.getElementById("saveBtn");
@@ -312,6 +331,8 @@
             }
         });
 
+        initSearchSelects();
+
         /* ปลดล็อกเมื่อกดแก้ไข */
         editBtn.addEventListener("click", () => {
             form.querySelectorAll(".lockable").forEach(el => {
@@ -327,6 +348,8 @@
             editBtn.classList.add("d-none");
             saveBtn.classList.remove("d-none");
             cancelBtn.classList.remove("d-none");
+
+            initSearchSelects();
 
             saveBtn.scrollIntoView({
                 behavior: 'smooth',

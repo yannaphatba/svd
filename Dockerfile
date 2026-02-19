@@ -1,8 +1,17 @@
 FROM php:8.3-fpm-alpine
 
-RUN docker-php-ext-install pdo pdo_mysql
+RUN apk add --no-cache \
+    nginx \
+    curl \
+    freetype \
+    libpng \
+    libjpeg-turbo \
+    freetype-dev \
+    libpng-dev \
+    libjpeg-turbo-dev
 
-RUN apk add --no-cache nginx curl
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo pdo_mysql
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

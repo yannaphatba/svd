@@ -11,6 +11,8 @@ COPY . .
 
 RUN chown -R www-data:www-data /var/www/html
 
+RUN rm -f /var/www/html/src/.env
+
 RUN echo "#!/bin/sh" > /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

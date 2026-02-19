@@ -23,13 +23,12 @@ COPY nginx/default.conf /etc/nginx/http.d/default.conf
 WORKDIR /var/www/html
 COPY . .
 
-RUN cd /var/www/html/src && composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
-
 RUN chown -R www-data:www-data /var/www/html
 
 RUN rm -f /var/www/html/src/.env
 
 RUN echo "#!/bin/sh" > /start.sh && \
+    echo "if [ ! -d /var/www/html/src/vendor ] && [ -d /var/www/html/vendor ]; then ln -s /var/www/html/vendor /var/www/html/src/vendor; fi" >> /start.sh && \
     echo "if [ ! -f /var/www/html/src/vendor/autoload.php ]; then cd /var/www/html/src && composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs; fi" >> /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

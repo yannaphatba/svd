@@ -13,9 +13,11 @@
         .sticker-wrapper { position: absolute; width: 8.0cm; height: 4.6cm; }
         .bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .no-text { position: absolute; left: 2.15cm; top: 1.15cm; font-size: 24pt; font-weight: bold; color: #000; line-height: 1; }
+        .no-text--orange { font-size: 22pt; }
         .qr-box { position: absolute; right: 0.6cm; top: 1.35cm; width: 2.6cm; text-align: center; }
         .qr-img { width: 2.6cm; height: 2.6cm; }
         .footer-url { position: absolute; left: 1.05cm; bottom: 0.2cm; font-size: 10pt; font-weight: bold; color: #000; line-height: 1; }
+        .footer-url--orange { font-size: 9pt; }
         .page-break { page-break-after: always; }
     </style>
 </head>
@@ -29,6 +31,7 @@
             $base64Image = 'data:image/jpeg;base64,' . $imageData;
         }
         $chunks = array_chunk($stickers, 12);
+        $isOrange = $selectedBg === '1';
     @endphp
 
     @foreach($chunks as $pageItems)
@@ -45,11 +48,11 @@
 
                 {!! $openDiv !!}
                     @if($base64Image) <img src="{{ $base64Image }}" class="bg-img"> @endif
-                    <div class="no-text">{{ $formattedNo }}</div>
+                    <div class="no-text {{ $isOrange ? 'no-text--orange' : '' }}">{{ $formattedNo }}</div>
                     <div class="qr-box">
                         <img src="{{ $item['qrcode'] }}" class="qr-img">
                     </div>
-                    <div class="footer-url">project.cpe.rmuti.ac.th</div>
+                    <div class="footer-url {{ $isOrange ? 'footer-url--orange' : '' }}">project.cpe.rmuti.ac.th</div>
                 </div>
             @endforeach
         </div>

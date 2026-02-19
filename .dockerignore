@@ -2,4 +2,4 @@ vendor
 node_modules
 public/storage
 .git
-.env
+src/.env

@@ -2,12 +2,14 @@ FROM php:8.3-fpm-alpine
 
 RUN docker-php-ext-install pdo pdo_mysql
 
-RUN apk add --no-cache nginx
+RUN apk add --no-cache nginx composer
 
 COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
 WORKDIR /var/www/html
 COPY . .
+
+RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html
 

@@ -1,6 +1,6 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
-# Install extensions
+# Install required extensions
 RUN docker-php-ext-install pdo pdo_mysql
 
 # Install nginx
@@ -9,19 +9,16 @@ RUN apk add --no-cache nginx
 # Copy nginx config
 COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
-# Create sdv folder inside container
-RUN mkdir -p /var/www/html/sdv
-
 # Set working directory
-WORKDIR /var/www/html/sdv
+WORKDIR /var/www/html
 
 # Copy project files
 COPY . .
 
-# Permissions
+# Fix permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Start script
+# Start both PHP-FPM and Nginx
 RUN echo "#!/bin/sh" > /start.sh && \
     echo "php-fpm -D" >> /start.sh && \
     echo "nginx -g 'daemon off;'" >> /start.sh && \

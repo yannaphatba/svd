@@ -73,6 +73,8 @@ class StudentController extends Controller
     {
         $userId = Auth::id();
 
+        $disk = config('filesystems.default');
+
         if (!$userId) {
             return redirect()->route('login')->with('error', 'กรุณาเข้าสู่ระบบ');
         }
@@ -108,9 +110,9 @@ class StudentController extends Controller
 
         if ($request->hasFile('profile_image')) {
             if ($student->profile_image) {
-                Storage::disk('public')->delete($student->profile_image);
+                Storage::disk($disk)->delete($student->profile_image);
             }
-            $updateData['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+            $updateData['profile_image'] = $request->file('profile_image')->store('profiles', $disk);
         }
 
         $student->update($updateData);
@@ -131,7 +133,7 @@ class StudentController extends Controller
                     ];
 
                     if ($request->hasFile("vehicle_image.$i")) {
-                        $vehicleData['vehicle_image'] = $request->file("vehicle_image.$i")->store('vehicles', 'public');
+                        $vehicleData['vehicle_image'] = $request->file("vehicle_image.$i")->store('vehicles', $disk);
                     }
 
                     Vehicle::create($vehicleData);

@@ -59,6 +59,55 @@ spec:
         persistentVolumeClaim:
           claimName: mysql-pvc # เชื่อมกับ PVC ด้านบนเพื่อให้ข้อมูลคงอยู่
 ---
+# 4. MinIO Service (internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: sdv
+spec:
+  ports: [{ port: 9000, targetPort: 9000 }]
+  selector: { app: minio }
+---
+# 5. MinIO Deployment (emptyDir, non-persistent)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: sdv
+spec:
+  selector: { matchLabels: { app: minio } }
+  template:
+    metadata: { labels: { app: minio } }
+    spec:
+      initContainers:
+      - name: init-bucket
+        image: alpine:3.19
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /data/sdv-uploads
+        volumeMounts:
+        - name: minio-data
+          mountPath: /data
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        args: ["server", "/data", "--address", ":9000", "--console-address", ":9001"]
+        env:
+        - name: MINIO_ROOT_USER
+          value: "sdvadmin"
+        - name: MINIO_ROOT_PASSWORD
+          value: "sdvadmin12345"
+        ports: [{ containerPort: 9000 }]
+        volumeMounts:
+        - name: minio-data
+          mountPath: /data
+      volumes:
+      - name: minio-data
+        emptyDir: {}
+---
 # 4. PHP-Nginx Service
 apiVersion: v1
 kind: Service
@@ -69,7 +118,7 @@ spec:
   ports: [{ port: 80 }]
   selector: { app: php }
 ---
-# 5. PHP-Nginx Deployment
+# 6. PHP-Nginx Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -95,6 +144,20 @@ spec:
           value: "https://project.cpe.rmuti.ac.th/sdv"
         - name: ASSET_URL
           value: "https://project.cpe.rmuti.ac.th/sdv"
+        - name: FILESYSTEM_DISK
+          value: "s3"
+        - name: AWS_ACCESS_KEY_ID
+          value: "sdvadmin"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "sdvadmin12345"
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+        - name: AWS_BUCKET
+          value: "sdv-uploads"
+        - name: AWS_ENDPOINT
+          value: "http://minio:9000"
+        - name: AWS_USE_PATH_STYLE_ENDPOINT
+          value: "true"
         - name: DB_CONNECTION
           value: "mysql"
         - name: DB_HOST
@@ -110,7 +173,7 @@ spec:
         - name: CACHE_STORE
           value: "file"
 ---
-# 6. Ingress (strip /sdv prefix at Ingress level)
+# 7. Ingress (strip /sdv prefix at Ingress level)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

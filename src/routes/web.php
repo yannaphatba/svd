@@ -6,6 +6,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\FileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,11 @@ use App\Http\Controllers\SecurityController;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+// Serve uploaded files via app to keep MinIO internal-only
+Route::get('/storage/{path}', [FileController::class, 'show'])
+    ->where('path', '.*')
+    ->name('storage.show');
 
 // --- Guest Routes ---
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

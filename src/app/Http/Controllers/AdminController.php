@@ -105,6 +105,8 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
+        $disk = config('filesystems.default');
+
         $validated = $request->validate([
             'prefix'       => 'nullable|string|max:10',
             'first_name'   => 'required|string|max:100',
@@ -126,7 +128,7 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('profile_image')) {
-            $validated['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+            $validated['profile_image'] = $request->file('profile_image')->store('profiles', $disk);
         }
 
         if (!empty($validated['sticker_number'])) {
@@ -152,7 +154,7 @@ class AdminController extends Controller
                 ]);
 
                 if ($request->hasFile("vehicle_image.$i")) {
-                    $vehicle->vehicle_image = $request->file("vehicle_image.$i")->store('vehicles', 'public');
+                    $vehicle->vehicle_image = $request->file("vehicle_image.$i")->store('vehicles', $disk);
                 }
                 $vehicle->save();
             }
@@ -176,6 +178,7 @@ class AdminController extends Controller
     {
         $student = Student::findOrFail($id);
         $old_student_id = $student->student_id;
+        $disk = config('filesystems.default');
 
         // 1. Validation ข้อมูลส่วนตัวและรูปโปรไฟล์
         $validated = $request->validate([
@@ -194,7 +197,7 @@ class AdminController extends Controller
 
         // 2. ✅ จัดการรูปภาพนักศึกษา (กันรูปหายเมื่อมีการอัปเดตข้อมูลอื่น)
         if ($request->hasFile('profile_image')) {
-            $validated['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+            $validated['profile_image'] = $request->file('profile_image')->store('profiles', $disk);
         }
 
         // 3. ✅ ซิงค์ Username เมื่อรหัสนักศึกษาเปลี่ยน
@@ -220,6 +223,7 @@ class AdminController extends Controller
 
         // 3. จัดการรถคันเดิม (Existing)
         if ($request->has('vehicle_type_existing')) {
+            $disk = config('filesystems.default');
             foreach ($request->vehicle_type_existing as $i => $type) {
                 // ✅ เอา if (!empty($alpha)) ออก เพื่อให้บันทึกได้แม้จะไม่ได้กรอกทะเบียน
                 $vehicleId = $request->vehicle_ids[$i] ?? null;
@@ -236,7 +240,7 @@ class AdminController extends Controller
                 ];
 
                 if ($request->hasFile("vehicle_image_existing.$i")) {
-                    $vehicleData['vehicle_image'] = $request->file("vehicle_image_existing.$i")->store('vehicles', 'public');
+                    $vehicleData['vehicle_image'] = $request->file("vehicle_image_existing.$i")->store('vehicles', $disk);
                 }
                 $student->vehicles()->create($vehicleData);
             }
@@ -244,6 +248,7 @@ class AdminController extends Controller
 
         // 4. จัดการรถใหม่ (New)
         if ($request->has('vehicle_type')) {
+            $disk = config('filesystems.default');
             foreach ($request->vehicle_type as $i => $type) {
                 // ✅ เปลี่ยนมาเช็คที่ประเภทรถแทน ถ้ามีการกดเพิ่มรถใหม่มา ต้องบันทึกให้
                 $newVehicle = [
@@ -257,7 +262,7 @@ class AdminController extends Controller
                 ];
 
                 if ($request->hasFile("vehicle_image.$i")) {
-                    $newVehicle['vehicle_image'] = $request->file("vehicle_image.$i")->store('vehicles', 'public');
+                    $newVehicle['vehicle_image'] = $request->file("vehicle_image.$i")->store('vehicles', $disk);
                 }
                 $student->vehicles()->create($newVehicle);
             }
@@ -288,8 +293,9 @@ class AdminController extends Controller
         if (Auth::user()->role !== 'admin') return back();
 
         // 1. ลบไฟล์รูปภาพทั้งหมดทิ้ง
-        Storage::disk('public')->deleteDirectory('profiles');
-        Storage::disk('public')->deleteDirectory('vehicles');
+        $disk = config('filesystems.default');
+        Storage::disk($disk)->deleteDirectory('profiles');
+        Storage::disk($disk)->deleteDirectory('vehicles');
 
         // 2. ล้างข้อมูลในตาราง (ต้องเรียงลำดับลบรถก่อนลบคนครับริว)
         \App\Models\Vehicle::query()->delete();  // 🚗 ลบข้อมูลรถทั้งหมด

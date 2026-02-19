@@ -83,6 +83,13 @@ spec:
       initContainers:
       - name: init-bucket
         image: alpine:3.19
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "32Mi"
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
         command:
         - sh
         - -c
@@ -94,6 +101,13 @@ spec:
       containers:
       - name: minio
         image: minio/minio:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "250m"
+            memory: "512Mi"
         args: ["server", "/data", "--address", ":9000", "--console-address", ":9001"]
         env:
         - name: MINIO_ROOT_USER

@@ -110,6 +110,7 @@ metadata:
   namespace: sdv
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: sdv-strip@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
@@ -123,4 +124,15 @@ spec:
             name: php-service
             port:
               number: 80
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: sdv-strip
+  namespace: sdv
+spec:
+  stripPrefix:
+    prefixes:
+      - /sdv
+
 

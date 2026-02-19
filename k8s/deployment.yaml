@@ -150,7 +150,7 @@ spec:
           value: "smtp.gmail.com"
         - name: MAIL_PORT
           value: "587"
-        - name: MAIL_SCHEME
+        - name: MAIL_ENCRYPTION
           value: "tls"
         - name: MAIL_USERNAME
           valueFrom:

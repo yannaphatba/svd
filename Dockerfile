@@ -23,6 +23,8 @@ COPY nginx/default.conf /etc/nginx/http.d/default.conf
 WORKDIR /var/www/html
 COPY . .
 
+RUN cd /var/www/html/src && composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs
+
 RUN chown -R www-data:www-data /var/www/html
 
 RUN rm -f /var/www/html/src/.env

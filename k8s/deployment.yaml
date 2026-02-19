@@ -18,7 +18,7 @@ spec:
   ports: [{ port: 3306 }]
   selector: { app: mysql }
 ---
-# 3. MySQL Deployment (MySQL 8.0 สเปกถูกต้อง)
+# 3. MySQL Deployment (แก้ไขเรื่อง Storage)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,10 +34,10 @@ spec:
         image: mysql:8.0
         resources:
           requests:
-            cpu: "100m"      # ขอใช้ CPU นิดเดียว
-            memory: "256Mi"  # ขอใช้ RAM ขั้นต่ำ
+            cpu: "100m"
+            memory: "256Mi"
           limits:
-            cpu: "200m"      # จำกัดไม่ให้ใช้เกินนี้
+            cpu: "200m"
             memory: "512Mi"
         env:
         - name: MYSQL_ROOT_PASSWORD
@@ -52,11 +52,12 @@ spec:
           value: "%"
         ports: [{ containerPort: 3306 }]
         volumeMounts:
-        - name: data
+        - name: mysql-storage # ชื่อต้องตรงกับ volumes ด้านล่าง
           mountPath: /var/lib/mysql
       volumes:
-      - name: data
-        emptyDir: {}
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc # เชื่อมกับ PVC ด้านบนเพื่อให้ข้อมูลคงอยู่
 ---
 # 4. PHP-Nginx Service
 apiVersion: v1
@@ -68,7 +69,7 @@ spec:
   ports: [{ port: 80 }]
   selector: { app: php }
 ---
-# 5. PHP-Nginx Deployment (จุดสำคัญ: ใช้ placeholder เพื่อให้ GitHub จัดการ)
+# 5. PHP-Nginx Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -81,8 +82,7 @@ spec:
     spec:
       containers:
       - name: php-nginx
-        # แก้กลับเป็น placeholder เพื่อให้ GitHub Actions ทำงานได้ครับ
-        image: ghcr.io/yannaphatba/sdv:placeholder
+        image: ghcr.io/yannaphatba/sdv:placeholder # สำหรับให้ GitHub Actions มา Replace
         imagePullPolicy: Always
         resources:
           requests: { cpu: "250m", memory: "512Mi" }
@@ -94,7 +94,7 @@ spec:
         - name: DB_CONNECTION
           value: "mysql"
         - name: DB_HOST
-          value: "mysql-service"
+          value: "mysql-service" # ตรงกับชื่อ Service ของ MySQL
         - name: DB_DATABASE
           value: "mydb"
         - name: DB_USERNAME
@@ -102,7 +102,7 @@ spec:
         - name: DB_PASSWORD
           value: "mypassword"
 ---
-# 6. Ingress (ทางเข้าเว็บ)
+# 6. Ingress & Middleware (คงเดิม)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -110,15 +110,14 @@ metadata:
   namespace: sdv
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.middlewares: sdv-strip@kubernetescrd
-
+    traefik.ingress.kubernetes.io/router.middlewares: sdv-sdv-strip@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
   - host: project.cpe.rmuti.ac.th
     http:
       paths:
-      - path: /sdv
+      - path: /sdv/
         pathType: Prefix
         backend:
           service:
@@ -135,4 +134,3 @@ spec:
   stripPrefix:
     prefixes:
       - /sdv
-

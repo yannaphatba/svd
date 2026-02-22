@@ -140,6 +140,11 @@ metadata:
   namespace: sdv
 spec:
   progressDeadlineSeconds: 1200
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector: { matchLabels: { app: php } }
   template:
     metadata: { labels: { app: php } }

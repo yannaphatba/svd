@@ -65,7 +65,13 @@ jobs:
           # Wait for rollout with timeout (must succeed)
           timeout 10m kubectl rollout status deployment/php-app \
             --namespace=sdv \
-            --insecure-skip-tls-verify=true
+            --insecure-skip-tls-verify=true || (
+              echo "Rollout failed. Showing diagnostics..." &&
+              kubectl get pods -n sdv -l app=php -o wide --insecure-skip-tls-verify=true &&
+              kubectl describe deployment/php-app -n sdv --insecure-skip-tls-verify=true &&
+              kubectl describe pods -n sdv -l app=php --insecure-skip-tls-verify=true &&
+              exit 1
+            )
 
       - name: Clear Laravel Cache
         continue-on-error: true

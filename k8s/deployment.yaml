@@ -139,6 +139,7 @@ metadata:
   name: php-app
   namespace: sdv
 spec:
+  progressDeadlineSeconds: 1200
   selector: { matchLabels: { app: php } }
   template:
     metadata: { labels: { app: php } }

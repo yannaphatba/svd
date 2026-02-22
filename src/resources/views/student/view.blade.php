@@ -82,7 +82,7 @@
                             <label class="form-label text-muted small">รหัสนักศึกษา</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge"></i></span>
-                                <input type="text" name="student_id" class="form-control lockable bg-light border-start-0 ps-0" value="{{ $student->student_id }}" readonly>
+                                <input type="text" name="student_id" class="form-control lockable bg-light border-start-0 ps-0 numeric-only" value="{{ $student->student_id }}" inputmode="numeric" pattern="\d*" readonly>
                             </div>
                         </div>
 
@@ -90,11 +90,11 @@
                         <div class="row g-2 mb-3">
                             <div class="col-5 col-md-4">
                                 <label class="form-label text-muted small">ห้อง/เตียง</label>
-                                <input type="text" name="room_bed" class="form-control lockable bg-light text-center" value="{{ $student->room_bed }}" readonly>
+                                <input type="text" name="room_bed" class="form-control lockable bg-light text-center numeric-only" value="{{ $student->room_bed }}" inputmode="numeric" pattern="\d*" readonly>
                             </div>
                             <div class="col-7 col-md-8">
                                 <label class="form-label text-muted small">เบอร์โทรศัพท์</label>
-                                <input type="text" name="phone" class="form-control lockable bg-light" value="{{ $student->phone }}" readonly>
+                                <input type="text" name="phone" class="form-control lockable bg-light numeric-only" value="{{ $student->phone }}" inputmode="numeric" pattern="\d*" readonly>
                             </div>
                         </div>
 
@@ -383,7 +383,7 @@
                             <input type="text" name="license_alpha[]" class="form-control text-center" placeholder="กข">
                         </div>
                         <div class="col-6 col-md-3">
-                            <input type="text" name="license_number[]" class="form-control text-center" placeholder="1234">
+                                <input type="text" name="license_number[]" class="form-control text-center numeric-only" placeholder="1234" inputmode="numeric" pattern="\d*">
                         </div>
                         <div class="col-12 col-md-6">
                             <input type="text" name="license_province[]" class="form-control" placeholder="จังหวัด (เช่น ขอนแก่น)">
@@ -421,6 +421,12 @@
             if (e.target.classList.contains("remove-new-vehicle")) {
                 e.target.closest(".vehicle-form").remove();
             }
+        });
+
+        // Allow only digits in numeric-only inputs
+        document.addEventListener("input", function(e) {
+            if (!e.target.classList.contains("numeric-only")) return;
+            e.target.value = e.target.value.replace(/\D+/g, "");
         });
 
     });

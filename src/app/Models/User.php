@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable; // เพิ่ม Notifiable ไว้ด้วยตามมาตรฐาน (เผื่ออนาคตใช้แจ้งเตือน)
+use Illuminate\Validation\ValidationException;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,27 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user): void {
+            if (empty($user->email)) {
+                return;
+            }
+
+            $normalizedEmail = strtolower(trim((string) $user->email));
+            $parts = explode('@', $normalizedEmail);
+            $domain = count($parts) === 2 ? $parts[1] : '';
+
+            if ($domain !== 'rmuti.ac.th') {
+                throw ValidationException::withMessages([
+                    'email' => 'กรุณาใช้อีเมลมหาวิทยาลัยที่ลงท้ายด้วย @rmuti.ac.th เท่านั้น',
+                ]);
+            }
+
+            $user->email = $normalizedEmail;
+        });
+    }
 
     public function getAuthIdentifierName()
     {

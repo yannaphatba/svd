@@ -27,16 +27,31 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'username' => 'required|unique:users,username', 
-            'email'    => ['required', 'email', 'unique:users,email', 'regex:/^[A-Za-z0-9._%+-]+@rmuti\.ac\.th$/i'],
+            'email'    => [
+                'required',
+                'email',
+                'unique:users,email',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $parts = explode('@', strtolower(trim((string) $value)));
+                    $domain = count($parts) === 2 ? $parts[1] : '';
+
+                    if ($domain !== 'rmuti.ac.th') {
+                        $fail('กรุณาใช้อีเมลมหาวิทยาลัยที่ลงท้ายด้วย @rmuti.ac.th เท่านั้น');
+                    }
+                },
+            ],
             'password' => 'required|confirmed|min:4',
             'role'     => 'required|in:admin,student,security' 
         ], [
             'username.unique' => 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว',
             'email.email' => 'กรุณากรอกรูปแบบอีเมลให้ถูกต้อง',
-            'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว',
-            'email.regex' => 'กรุณาใช้อีเมลมหาวิทยาลัยที่ลงท้ายด้วย @rmuti.ac.th เท่านั้น'
+            'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว'
         ]);
 
         // 1. บันทึกข้อมูลลงฐานข้อมูล (เพิ่มช่อง email เข้าไปครับ)

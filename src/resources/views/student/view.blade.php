@@ -332,6 +332,25 @@
         const majorSelect = form.querySelector('select[name="major_id"]');
         const advisorSelect = form.querySelector('select[name="advisor_id"]');
 
+        const buildOptionsCache = (select, getMeta) => {
+            if (!select) return [];
+            return Array.from(select.options)
+                .filter((option) => option.value)
+                .map((option) => ({
+                    value: option.value,
+                    label: option.text,
+                    meta: getMeta(option),
+                }));
+        };
+
+        const majorOptionsCache = buildOptionsCache(majorSelect, (option) => ({
+            facultyId: option.dataset.facultyId || "",
+        }));
+
+        const advisorOptionsCache = buildOptionsCache(advisorSelect, (option) => ({
+            majorId: option.dataset.majorId || "",
+        }));
+
         const resetSelectValue = (select) => {
             if (!select) return;
             select.value = "";
@@ -362,54 +381,51 @@
             });
         };
 
-        const filterMajorsByFaculty = (facultyId) => {
-            if (!majorSelect) return;
-            Array.from(majorSelect.options).forEach((option) => {
-                if (!option.value) {
-                    option.hidden = false;
-                    option.disabled = false;
-                    return;
-                }
+        const rebuildSelectOptions = (select, cache, predicate) => {
+            if (!select) return;
+            const placeholder = Array.from(select.options).find((option) => !option.value) || null;
+            const currentValue = select.value;
 
-                if (!facultyId) {
-                    option.hidden = true;
-                    option.disabled = true;
-                    return;
-                }
-
-                const isMatch = option.dataset.facultyId === facultyId;
-                option.hidden = !isMatch;
-                option.disabled = !isMatch;
-            });
-
-            if (typeof $ !== "undefined" && $.fn.select2 && $(majorSelect).hasClass("select2-hidden-accessible")) {
-                refreshSelect2(majorSelect);
+            select.innerHTML = "";
+            if (placeholder) {
+                select.appendChild(placeholder);
             }
+
+            cache
+                .filter(predicate)
+                .forEach((item) => {
+                    const option = document.createElement("option");
+                    option.value = item.value;
+                    option.text = item.label;
+                    Object.entries(item.meta || {}).forEach(([key, value]) => {
+                        if (value) option.dataset[key] = value;
+                    });
+                    select.appendChild(option);
+                });
+
+            if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+                select.value = currentValue;
+            } else {
+                select.value = "";
+            }
+
+            refreshSelect2(select);
+        };
+
+        const filterMajorsByFaculty = (facultyId) => {
+            rebuildSelectOptions(
+                majorSelect,
+                majorOptionsCache,
+                (item) => facultyId && item.meta.facultyId === facultyId
+            );
         };
 
         const filterAdvisorsByMajor = (majorId) => {
-            if (!advisorSelect) return;
-            Array.from(advisorSelect.options).forEach((option) => {
-                if (!option.value) {
-                    option.hidden = false;
-                    option.disabled = false;
-                    return;
-                }
-
-                if (!majorId) {
-                    option.hidden = true;
-                    option.disabled = true;
-                    return;
-                }
-
-                const isMatch = option.dataset.majorId === majorId;
-                option.hidden = !isMatch;
-                option.disabled = !isMatch;
-            });
-
-            if (typeof $ !== "undefined" && $.fn.select2 && $(advisorSelect).hasClass("select2-hidden-accessible")) {
-                refreshSelect2(advisorSelect);
-            }
+            rebuildSelectOptions(
+                advisorSelect,
+                advisorOptionsCache,
+                (item) => majorId && item.meta.majorId === majorId
+            );
         };
 
         const applyDependencyState = (enforceReset = false) => {
@@ -470,6 +486,7 @@
         });
 
         initSelectSearch();
+        setSelectDisabled(facultySelect, facultySelect?.disabled ?? false);
         applyDependencyState(false);
 
         /* ปลดล็อกเมื่อกดแก้ไข */

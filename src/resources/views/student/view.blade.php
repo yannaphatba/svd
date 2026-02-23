@@ -90,7 +90,7 @@
                         <div class="row g-2 mb-3">
                             <div class="col-5 col-md-4">
                                 <label class="form-label text-muted small">ห้อง/เตียง</label>
-                                <input type="text" name="room_bed" class="form-control lockable bg-light text-center numeric-slash" value="{{ $student->room_bed }}" inputmode="numeric" pattern="\d+(\/\d+)?" readonly>
+                                <input type="text" name="room_bed" class="form-control lockable bg-light text-center numeric-slash" value="{{ $student->room_bed }}" inputmode="text" pattern="\d+(\/\d+)?" readonly>
                             </div>
                             <div class="col-7 col-md-8">
                                 <label class="form-label text-muted small">เบอร์โทรศัพท์</label>
@@ -294,6 +294,18 @@
     .form-control[readonly] {
         opacity: 0.8;
         cursor: not-allowed;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection[aria-disabled="true"] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection[aria-disabled="true"] .select2-selection__rendered {
+        color: #6c757d;
     }
 </style>
 

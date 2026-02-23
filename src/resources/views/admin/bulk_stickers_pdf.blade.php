@@ -52,7 +52,7 @@
                     <div class="qr-box">
                         <img src="{{ $item['qrcode'] }}" class="qr-img">
                     </div>
-                    <div class="footer-url {{ $isOrange ? 'footer-url--orange' : '' }}">project.cpe.rmuti.ac.th</div>
+                    <div class="footer-url {{ $isOrange ? 'footer-url--orange' : '' }}">project.cpe.rmuti.ac.th/sdv</div>
                 </div>
             @endforeach
         </div>

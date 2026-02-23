@@ -328,6 +328,8 @@
         const addVehicleBtn = document.getElementById("addVehicleBtn");
         const newVehicles = document.getElementById("new-vehicles");
 
+        let isLocked = true;
+
         const facultySelect = form.querySelector('select[name="faculty_id"]');
         const majorSelect = form.querySelector('select[name="major_id"]');
         const advisorSelect = form.querySelector('select[name="advisor_id"]');
@@ -486,8 +488,22 @@
         });
 
         initSelectSearch();
+        setSelectDisabled(facultySelect, true);
+        setSelectDisabled(majorSelect, true);
+        setSelectDisabled(advisorSelect, true);
         setSelectDisabled(facultySelect, facultySelect?.disabled ?? false);
         applyDependencyState(false);
+
+        if (typeof $ !== "undefined" && $.fn.select2) {
+            const preventIfLocked = (event) => {
+                if (isLocked) event.preventDefault();
+            };
+            $(facultySelect).on("select2:select select2:clear", () => applyDependencyState(true));
+            $(majorSelect).on("select2:select select2:clear", () => applyDependencyState(true));
+            $(facultySelect).on("select2:opening", preventIfLocked);
+            $(majorSelect).on("select2:opening", preventIfLocked);
+            $(advisorSelect).on("select2:opening", preventIfLocked);
+        }
 
         /* ปลดล็อกเมื่อกดแก้ไข */
         editBtn.addEventListener("click", () => {
@@ -508,6 +524,7 @@
             editBtn.classList.add("d-none");
             saveBtn.classList.remove("d-none");
             cancelBtn.classList.remove("d-none");
+            isLocked = false;
 
             initSelectSearch();
             applyDependencyState(true);

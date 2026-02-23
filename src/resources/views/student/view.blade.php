@@ -345,7 +345,21 @@
             select.disabled = isDisabled;
             if (typeof $ !== "undefined" && $.fn.select2 && $(select).hasClass("select2-hidden-accessible")) {
                 $(select).prop("disabled", isDisabled);
+                $(select).trigger("change.select2");
             }
+        };
+
+        const refreshSelect2 = (select) => {
+            if (!select || typeof $ === "undefined" || !$.fn.select2) return;
+            const $select = $(select);
+            if (!$select.hasClass("select2-hidden-accessible")) return;
+            $select.select2("destroy");
+            $select.select2({
+                theme: "bootstrap-5",
+                width: "100%",
+                placeholder: $select.data("placeholder") || "",
+                allowClear: true,
+            });
         };
 
         const filterMajorsByFaculty = (facultyId) => {
@@ -367,6 +381,10 @@
                 option.hidden = !isMatch;
                 option.disabled = !isMatch;
             });
+
+            if (typeof $ !== "undefined" && $.fn.select2 && $(majorSelect).hasClass("select2-hidden-accessible")) {
+                refreshSelect2(majorSelect);
+            }
         };
 
         const filterAdvisorsByMajor = (majorId) => {
@@ -388,6 +406,10 @@
                 option.hidden = !isMatch;
                 option.disabled = !isMatch;
             });
+
+            if (typeof $ !== "undefined" && $.fn.select2 && $(advisorSelect).hasClass("select2-hidden-accessible")) {
+                refreshSelect2(advisorSelect);
+            }
         };
 
         const applyDependencyState = (enforceReset = false) => {
@@ -437,7 +459,11 @@
         /* Lock form ตอนเริ่มต้น */
         form.querySelectorAll(".lockable").forEach(el => {
             if (el.tagName === "SELECT" || el.type === "file" || el.tagName === "BUTTON") {
-                el.disabled = true;
+                if (el.tagName === "SELECT") {
+                    setSelectDisabled(el, true);
+                } else {
+                    el.disabled = true;
+                }
             } else {
                 el.readOnly = true;
             }
@@ -449,7 +475,11 @@
         /* ปลดล็อกเมื่อกดแก้ไข */
         editBtn.addEventListener("click", () => {
             form.querySelectorAll(".lockable").forEach(el => {
-                el.disabled = false;
+                if (el.tagName === "SELECT") {
+                    setSelectDisabled(el, false);
+                } else {
+                    el.disabled = false;
+                }
                 el.readOnly = false;
                 el.classList.remove("bg-light");
                 el.classList.add("bg-white");

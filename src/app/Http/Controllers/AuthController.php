@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail; // ✅ เพิ่มบรรทัดนี้
 use App\Mail\VerifyEmailMail; // ✅ เพิ่มบรรทัดนี้
 use Illuminate\Support\Facades\Log; // ✅ สำหรับบันทึก Error
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -89,11 +89,14 @@ class AuthController extends Controller
 
         // 2. 📩 ระบบส่งเมลยืนยัน (เพิ่มเข้าไปใหม่แบบปลอดภัย)
         try {
-            $verifyUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(60),
-                ['id' => $user->id, 'hash' => sha1((string) $user->email)]
-            );
+            $user->email_verification_token = Str::random(64);
+            $user->email_verification_expires_at = now()->addMinutes(60);
+            $user->save();
+
+            $verifyUrl = route('verification.verify', [
+                'id' => $user->id,
+                'hash' => $user->email_verification_token,
+            ]);
             Mail::to($request->email)->send(new VerifyEmailMail($user, $verifyUrl));
         } catch (\Exception $e) {
             // 🛡️ ถ้าส่งไม่สำเร็จ (เช่น เมลมั่ว/เน็ตหลุด) ให้จด Error ลง Log 
@@ -145,19 +148,22 @@ class AuthController extends Controller
 
     public function verifyEmail(Request $request, $id, $hash)
     {
-        if (!$request->hasValidSignature() && !$request->hasValidSignature(false)) {
-            abort(403, 'ลิงก์ยืนยันไม่ถูกต้องหรือหมดอายุ');
+        $user = User::findOrFail($id);
+        $expected = (string) $user->email_verification_token;
+        $expiresAt = $user->email_verification_expires_at;
+
+        if (empty($expected) || !hash_equals($expected, (string) $hash)) {
+            abort(403, 'ลิงก์ยืนยันไม่ถูกต้อง');
         }
 
-        $user = User::findOrFail($id);
-        $expected = sha1((string) $user->email);
-
-        if (!hash_equals($expected, (string) $hash)) {
-            abort(403, 'ลิงก์ยืนยันไม่ถูกต้อง');
+        if ($expiresAt && now()->greaterThan($expiresAt)) {
+            abort(403, 'ลิงก์ยืนยันไม่ถูกต้องหรือหมดอายุ');
         }
 
         if (empty($user->email_verified_at)) {
             $user->email_verified_at = now();
+            $user->email_verification_token = null;
+            $user->email_verification_expires_at = null;
             $user->save();
         }
 

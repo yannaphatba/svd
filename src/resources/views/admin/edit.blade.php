@@ -111,7 +111,7 @@
                             <select name="major_id" class="form-select bg-light">
                                 <option value="">-- เลือกสาขา --</option>
                                 @foreach($majors as $m)
-                                <option value="{{ $m->id }}" {{ $student->major_id == $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
+                                <option value="{{ $m->id }}" data-faculty-id="{{ $m->faculty_id }}" {{ $student->major_id == $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -121,7 +121,8 @@
                             <select name="advisor_id" class="form-select bg-light">
                                 <option value="">-- เลือกอาจารย์ --</option>
                                 @foreach($advisors as $adv)
-                                <option value="{{ $adv->id }}" {{ $student->advisor_id == $adv->id ? 'selected' : '' }}>
+                                @php $advisorMajorId = $adv->majors->first()?->id; @endphp
+                                <option value="{{ $adv->id }}" data-major-id="{{ $advisorMajorId }}" {{ $student->advisor_id == $adv->id ? 'selected' : '' }}>
                                     {{ $adv->name }} ({{ $adv->phone }})
                                 </option>
                                 @endforeach
@@ -280,6 +281,111 @@
 @push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const facultySelect = document.querySelector('select[name="faculty_id"]');
+        const majorSelect = document.querySelector('select[name="major_id"]');
+        const advisorSelect = document.querySelector('select[name="advisor_id"]');
+
+        const resetSelectValue = (select) => {
+            if (!select) return;
+            select.value = "";
+        };
+
+        const setSelectDisabled = (select, isDisabled) => {
+            if (!select) return;
+            select.disabled = isDisabled;
+        };
+
+        const filterMajorsByFaculty = (facultyId) => {
+            if (!majorSelect) return;
+            Array.from(majorSelect.options).forEach((option) => {
+                if (!option.value) {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+
+                if (!facultyId) {
+                    option.hidden = true;
+                    option.disabled = true;
+                    return;
+                }
+
+                const isMatch = option.dataset.facultyId === facultyId;
+                option.hidden = !isMatch;
+                option.disabled = !isMatch;
+            });
+        };
+
+        const filterAdvisorsByMajor = (majorId) => {
+            if (!advisorSelect) return;
+            Array.from(advisorSelect.options).forEach((option) => {
+                if (!option.value) {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+
+                if (!majorId) {
+                    option.hidden = true;
+                    option.disabled = true;
+                    return;
+                }
+
+                const isMatch = option.dataset.majorId === majorId;
+                option.hidden = !isMatch;
+                option.disabled = !isMatch;
+            });
+        };
+
+        const applyDependencyState = (enforceReset = false) => {
+            const facultyId = facultySelect?.value || "";
+
+            if (!facultyId) {
+                setSelectDisabled(majorSelect, true);
+                setSelectDisabled(advisorSelect, true);
+                filterMajorsByFaculty("");
+                filterAdvisorsByMajor("");
+                if (enforceReset) {
+                    resetSelectValue(majorSelect);
+                    resetSelectValue(advisorSelect);
+                }
+                return;
+            }
+
+            filterMajorsByFaculty(facultyId);
+            setSelectDisabled(majorSelect, false);
+
+            const majorOption = majorSelect?.selectedOptions?.[0];
+            const majorMatches = !!majorSelect?.value && majorOption?.dataset?.facultyId === facultyId;
+
+            if (!majorMatches) {
+                if (enforceReset) {
+                    resetSelectValue(majorSelect);
+                }
+                filterAdvisorsByMajor("");
+                setSelectDisabled(advisorSelect, true);
+                if (enforceReset) {
+                    resetSelectValue(advisorSelect);
+                }
+                return;
+            }
+
+            const majorId = majorSelect?.value || "";
+            filterAdvisorsByMajor(majorId);
+            setSelectDisabled(advisorSelect, false);
+
+            const advisorOption = advisorSelect?.selectedOptions?.[0];
+            const advisorMatches = !!advisorSelect?.value && advisorOption?.dataset?.majorId === majorId;
+            if (!advisorMatches && enforceReset) {
+                resetSelectValue(advisorSelect);
+            }
+        };
+
+        applyDependencyState(false);
+
+        facultySelect?.addEventListener("change", () => applyDependencyState(true));
+        majorSelect?.addEventListener("change", () => applyDependencyState(true));
+
         const addVehicleBtn = document.getElementById("addVehicleBtn");
         const newVehicles = document.getElementById("new-vehicles");
 

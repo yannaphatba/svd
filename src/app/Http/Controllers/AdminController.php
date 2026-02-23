@@ -94,7 +94,7 @@ class AdminController extends Controller
     public function create()
     {
         return view('admin.create', [
-            'advisors'  => Advisor::all(),
+            'advisors'  => Advisor::with('majors')->orderBy('name')->get(),
             'faculties' => Faculty::orderBy('name')->get(),
             'majors'    => Major::orderBy('name')->get(),
         ]);
@@ -168,7 +168,7 @@ class AdminController extends Controller
         return view('admin.edit', [
             'student'   => Student::findOrFail($id),
             'vehicles'  => Vehicle::where('student_id', $id)->get(),
-            'advisors'  => Advisor::orderBy('name')->get(),
+            'advisors'  => Advisor::with('majors')->orderBy('name')->get(),
             'faculties' => Faculty::orderBy('name')->get(),
             'majors'    => Major::orderBy('name')->get(),
         ]);

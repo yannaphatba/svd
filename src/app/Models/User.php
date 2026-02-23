@@ -26,6 +26,10 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
     protected static function booted(): void
     {
         static::saving(function (self $user): void {

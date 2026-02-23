@@ -7,8 +7,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail; // ✅ เพิ่มบรรทัดนี้
-use App\Mail\WelcomeMail; // ✅ เพิ่มบรรทัดนี้ (ต้องสร้างไฟล์ Mail ก่อนนะริว)
+use App\Mail\VerifyEmailMail; // ✅ เพิ่มบรรทัดนี้
 use Illuminate\Support\Facades\Log; // ✅ สำหรับบันทึก Error
+use Illuminate\Support\Facades\URL;
 
 class AuthController extends Controller
 {
@@ -48,7 +49,21 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'username' => 'required|unique:users,username', 
+            'username' => [
+                'required',
+                'unique:users,username',
+                'regex:/^[0-9-]+$/',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $digits = preg_replace('/\D+/', '', (string) $value);
+                    if (strlen($digits) !== 13) {
+                        $fail('รหัสนักศึกษาต้องมีตัวเลข 13 หลัก');
+                    }
+
+                    if (substr_count((string) $value, '-') > 1) {
+                        $fail('รหัสนักศึกษาสามารถใส่เครื่องหมาย - ได้ไม่เกิน 1 ตัว');
+                    }
+                },
+            ],
             'email'    => [
                 'required',
                 'email:rfc,dns',
@@ -78,17 +93,21 @@ class AuthController extends Controller
             'role'     => $request->role, 
         ]);
 
-        // 2. 📩 ระบบส่งเมลแจ้งเตือน (เพิ่มเข้าไปใหม่แบบปลอดภัย)
+        // 2. 📩 ระบบส่งเมลยืนยัน (เพิ่มเข้าไปใหม่แบบปลอดภัย)
         try {
-            // พยายามส่งเมลไปที่ email ที่รับมาจากหน้าฟอร์ม
-            Mail::to($request->email)->send(new WelcomeMail($user));
+            $verifyUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            );
+            Mail::to($request->email)->send(new VerifyEmailMail($user, $verifyUrl));
         } catch (\Exception $e) {
             // 🛡️ ถ้าส่งไม่สำเร็จ (เช่น เมลมั่ว/เน็ตหลุด) ให้จด Error ลง Log 
             // แต่ระบบจะไม่หยุดทำงาน (ไม่ขึ้นหน้าขาว)
             Log::error("Email sending failed: " . $e->getMessage());
         }
 
-        return redirect()->route('login')->with('success', 'สมัครสมาชิกสำเร็จ! ตรวจสอบกล่องจดหมายของคุณด้วยครับ');
+        return redirect()->route('login')->with('success', 'สมัครสมาชิกสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ');
     }
 
     /**
@@ -107,6 +126,13 @@ class AuthController extends Controller
             $request->session()->forget('url.intended');
             $user = Auth::user();
 
+            if ($user->role === 'student' && empty($user->email_verified_at)) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->with('error', 'กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ');
+            }
+
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             } 
@@ -121,6 +147,27 @@ class AuthController extends Controller
         }
 
         return back()->with('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')->withInput();
+    }
+
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(403, 'ลิงก์ยืนยันไม่ถูกต้องหรือหมดอายุ');
+        }
+
+        $user = User::findOrFail($id);
+        $expected = sha1((string) $user->email);
+
+        if (!hash_equals($expected, (string) $hash)) {
+            abort(403, 'ลิงก์ยืนยันไม่ถูกต้อง');
+        }
+
+        if (empty($user->email_verified_at)) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        return redirect()->route('login')->with('success', 'ยืนยันอีเมลเรียบร้อยแล้ว สามารถเข้าสู่ระบบได้');
     }
 
     /**

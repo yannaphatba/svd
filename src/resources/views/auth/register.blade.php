@@ -19,7 +19,8 @@
 
     <div class="mb-3">
       <label>ชื่อผู้ใช้ (ให้ใช้เป็นรหัสนักศึกษา)</label>
-      <input type="text" name="username" class="form-control" placeholder="เช่น 6xxxxxxxxxx-x" value="{{ old('username') }}" required>
+      <input type="text" name="username" class="form-control" placeholder="เช่น 661723103748-9" value="{{ old('username') }}" inputmode="text" maxlength="14" pattern="^\d{13}$|^\d{12}-\d$" required>
+      <small class="text-muted">กรอกตัวเลข 13 หลัก และใส่ - ได้ไม่เกิน 1 ตัว</small>
     </div>
 
     <div class="mb-3">
@@ -48,3 +49,26 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const usernameInput = document.querySelector('input[name="username"]');
+    if (!usernameInput) return;
+
+    usernameInput.addEventListener("input", () => {
+      let value = usernameInput.value.replace(/[^0-9-]/g, "");
+      const parts = value.split("-");
+      if (parts.length > 2) {
+        value = parts.shift() + "-" + parts.join("").replace(/-/g, "");
+      }
+      const digits = value.replace(/\D+/g, "");
+      if (digits.length > 13) {
+        const trimmed = digits.slice(0, 13);
+        value = trimmed;
+      }
+      usernameInput.value = value;
+    });
+  });
+</script>
+@endpush

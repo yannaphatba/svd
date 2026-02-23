@@ -55,8 +55,8 @@ class AuthController extends Controller
                 'regex:/^[0-9-]+$/',
                 function (string $attribute, mixed $value, \Closure $fail) {
                     $digits = preg_replace('/\D+/', '', (string) $value);
-                    if (strlen($digits) !== 13) {
-                        $fail('รหัสนักศึกษาต้องมีตัวเลข 13 หลัก');
+                    if (strlen($digits) !== 12) {
+                        $fail('รหัสนักศึกษาต้องมีตัวเลข 12 หลัก');
                     }
 
                     if (substr_count((string) $value, '-') > 1) {

@@ -128,21 +128,11 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <form method="GET" class="row g-2">
-                <div class="col-12 col-md-9">
+                <div class="col-12">
                     <input type="text" name="search" class="form-control bg-light border-0 shadow-none fw-bold" style="font-size:1.5rem; height:3.2rem;" placeholder="พิมพ์คำค้นหา..." value="{{ request('search') }}">
-                    <div id="qr-scan-wrap" class="mt-2">
-                        <button type="button" id="qr-scan-btn" class="btn btn-outline-primary btn-lg fw-bold px-4" style="font-size:1.2rem;">สแกน QR ด้วยกล้อง</button>
-                        <button type="button" id="qr-close-btn" class="btn btn-outline-danger btn-sm ms-2 d-none">ปิดกล้อง</button>
-                        <div class="mt-2">
-                            <div id="qr-reader" class="w-100 rounded border d-none" style="min-height: 320px; max-width: 100vw;"></div>
-                            <video id="qr-preview" class="w-100 rounded border d-none" autoplay muted playsinline></video>
-                        </div>
-                        <small id="qr-scan-hint" class="text-muted d-block mt-1"></small>
-                    </div>
                 </div>
-                <div class="col-12 col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm btn-lg fw-bold px-4" style="font-size:1.2rem;">ค้นหา</button>
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary flex-grow-1 btn-lg fw-bold px-4" style="font-size:1.2rem;">ล้างค่า</a>
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary w-100 shadow-sm btn-lg fw-bold px-4" style="font-size:1.2rem;">ค้นหา</button>
                 </div>
             </form>
         </div>

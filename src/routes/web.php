@@ -67,6 +67,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export-students', [AdminController::class, 'exportStudents'])->name('export');
         Route::get('/student/{id}/show', [AdminController::class, 'show'])->name('student.show');
         Route::delete('/clear-all-students', [AdminController::class, 'clearAllStudents'])->name('clearAllStudents');
+        Route::get('/add-info', function () {
+            return view('admin.add-info');
+        })->name('addInfo');
 
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
@@ -86,7 +89,4 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // เพิ่ม route สำหรับปุ่มเพิ่มข้อมูลคณะ/สาขา/อาจารย์
-    Route::get('/add-info', function() {
-        return view('admin.add-info');
-    })->name('addInfo');
 });

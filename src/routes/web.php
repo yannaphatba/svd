@@ -70,6 +70,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/add-info', function () {
             return view('admin.add-info');
         })->name('addInfo');
+        Route::get('/faculty/create', [StudentController::class, 'facultyCreate'])->name('faculty.create');
+        Route::post('/faculty/store', [StudentController::class, 'storeFaculty'])->name('faculty.store');
+        Route::get('/major/create', [StudentController::class, 'majorCreate'])->name('major.create');
+        Route::post('/major/store', [StudentController::class, 'storeMajor'])->name('major.store');
+        Route::get('/advisor/create', [StudentController::class, 'advisorCreate'])->name('advisor.create');
+        Route::post('/advisor/store', [StudentController::class, 'storeAdvisor'])->name('advisor.store');
 
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');

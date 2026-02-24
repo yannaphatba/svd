@@ -67,15 +67,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export-students', [AdminController::class, 'exportStudents'])->name('export');
         Route::get('/student/{id}/show', [AdminController::class, 'show'])->name('student.show');
         Route::delete('/clear-all-students', [AdminController::class, 'clearAllStudents'])->name('clearAllStudents');
-        Route::get('/add-info', function () {
-            return view('admin.add-info');
-        })->name('addInfo');
-        Route::get('/faculty/create', [StudentController::class, 'facultyCreate'])->name('faculty.create');
-        Route::post('/faculty/store', [StudentController::class, 'storeFaculty'])->name('faculty.store');
-        Route::get('/major/create', [StudentController::class, 'majorCreate'])->name('major.create');
-        Route::post('/major/store', [StudentController::class, 'storeMajor'])->name('major.store');
-        Route::get('/advisor/create', [StudentController::class, 'advisorCreate'])->name('advisor.create');
-        Route::post('/advisor/store', [StudentController::class, 'storeAdvisor'])->name('advisor.store');
+        Route::get('/add-info', [AdminController::class, 'addInfo'])->name('addInfo');
+        Route::get('/faculty/create', [AdminController::class, 'facultyCreate'])->name('faculty.create');
+        Route::post('/faculty/store', [AdminController::class, 'storeFaculty'])->name('faculty.store');
+        Route::get('/major/create', [AdminController::class, 'majorCreate'])->name('major.create');
+        Route::post('/major/store', [AdminController::class, 'storeMajor'])->name('major.store');
+        Route::get('/advisor/create', [AdminController::class, 'advisorCreate'])->name('advisor.create');
+        Route::post('/advisor/store', [AdminController::class, 'storeAdvisor'])->name('advisor.store');
+        Route::delete('/faculty/{id}', [AdminController::class, 'destroyFaculty'])->name('faculty.destroy');
+        Route::delete('/major/{id}', [AdminController::class, 'destroyMajor'])->name('major.destroy');
+        Route::delete('/advisor/{id}', [AdminController::class, 'destroyAdvisor'])->name('advisor.destroy');
 
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');

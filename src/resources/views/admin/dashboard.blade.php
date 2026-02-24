@@ -2,6 +2,32 @@
 @section('title','แดชบอร์ดแอดมิน')
 
 @section('content')
+<style>
+    .admin-search-input {
+        background: #fff6e5;
+        border: 2px solid #f0c36a;
+        font-size: 1.6rem;
+        height: 3.6rem;
+        font-weight: 700;
+        color: #2b2b2b;
+    }
+    .admin-search-input::placeholder { color: #6b5e43; }
+    .admin-search-input:focus {
+        border-color: #e48a00;
+        box-shadow: 0 0 0 0.2rem rgba(228, 138, 0, 0.15);
+    }
+    @media (max-width: 768px) {
+        .admin-search-input {
+            border: 2px solid #0d6efd;
+            background: #fff;
+        }
+    }
+    .btn-print { background:#d93845; color:#fff; }
+    .btn-backup { background:#198754; color:#fff; }
+    .btn-clear { background:#fff0f0; color:#b02a37; border:1px solid #f1b0b7; }
+    .btn-addinfo { background:#1f8f6a; color:#fff; }
+    .btn-users { background:#17a2b8; color:#fff; }
+</style>
 <div class="container-fluid px-2 px-md-4 mt-3 mb-5">
 
     {{-- Header --}}
@@ -87,7 +113,7 @@
                 {{-- ส่วนที่ 2: ปุ่มพิมพ์ชุดใหญ่ --}}
                 <div class="col-12 col-md-6 order-2">
                     <form id="bulk_print_form" action="{{ route('admin.stickers.bulk') }}" method="GET" target="_blank">
-                        <button type="submit" class="btn btn-danger w-100 shadow-sm fw-bold py-2 border-0 opacity-100">
+                        <button type="submit" class="btn btn-print w-100 shadow-sm fw-bold py-2 border-0 opacity-100">
                             พิมพ์สติ๊กเกอร์ชุดใหญ่
                         </button>
                     </form>
@@ -97,7 +123,7 @@
                 <div class="col-12 col-md-6 order-3">
                     <div class="row g-2">
                         <div class="col-6">
-                            <a href="{{ route('admin.export') }}" class="btn btn-success w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-white text-decoration-none opacity-100">
+                            <a href="{{ route('admin.export') }}" class="btn btn-backup w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-white text-decoration-none opacity-100">
                                 Backup Excel
                             </a>
                         </div>
@@ -105,7 +131,7 @@
                             <form id="clear-all-form" action="{{ route('admin.clearAllStudents') }}" method="POST" data-export-url="{{ route('admin.export') }}" class="h-100">
                                 @csrf @method('DELETE')
                                 {{-- ✅ ปรับเป็นปุ่มสีแดงอ่อน (bg-danger-subtle) เพื่อให้ข้อความแดงเข้มชัดเจนตลอดเวลา แม้จะเอาเมาส์ไปชี้ --}}
-                                <button type="submit" class="btn w-100 shadow-sm fw-bold py-2 border border-danger text-danger bg-danger-subtle" style="transition: none;">
+                                <button type="submit" class="btn btn-clear w-100 shadow-sm fw-bold py-2" style="transition: none;">
                                     ล้างระบบ
                                 </button>
                             </form>
@@ -115,10 +141,10 @@
 
                 {{-- ส่วนที่ 4: ปุ่มจัดการผู้ใช้งาน --}}
                 <div class="col-12 col-md-6 order-4">
-                    <a href="{{ route('admin.addInfo') }}" class="btn btn-success text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100">
+                    <a href="{{ route('admin.addInfo') }}" class="btn btn-addinfo text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100">
                         เพิ่มข้อมูลคณะ/สาขา/อาจารย์
                     </a>
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-info text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100 mt-2">
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-users text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100 mt-2">
                         จัดการผู้ใช้งาน
                     </a>
                 </div>
@@ -132,7 +158,7 @@
         <div class="card-body p-3">
             <form method="GET" class="row g-2">
                 <div class="col-12">
-                    <input type="text" name="search" class="form-control bg-light border-0 shadow-none fw-bold" style="font-size:1.5rem; height:3.2rem;" placeholder="พิมพ์คำค้นหา..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control admin-search-input shadow-none" placeholder="พิมพ์คำค้นหา..." value="{{ request('search') }}">
                 </div>
                 <div class="col-12 d-flex gap-2 mt-2">
                     <button type="submit" class="btn btn-primary w-100 shadow-sm btn-lg fw-bold px-4" style="font-size:1.2rem;">ค้นหา</button>
@@ -392,3 +418,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endsection
+
+

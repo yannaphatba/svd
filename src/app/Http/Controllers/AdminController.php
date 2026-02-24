@@ -118,6 +118,124 @@ class AdminController extends Controller
         ]);
     }
 
+    public function addInfo()
+    {
+        return view('admin.add-info', [
+            'faculties' => Faculty::orderBy('name')->get(),
+            'majors' => Major::with('faculty')->orderBy('name')->get(),
+            'advisors' => Advisor::with('majors')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function facultyCreate()
+    {
+        return view('admin.faculty-create');
+    }
+
+    public function majorCreate()
+    {
+        $faculties = Faculty::orderBy('name')->get();
+        return view('admin.major-create', compact('faculties'));
+    }
+
+    public function advisorCreate()
+    {
+        $majors = Major::orderBy('name')->get();
+        return view('admin.advisor-create', compact('majors'));
+    }
+
+    public function storeFaculty(Request $request)
+    {
+        $request->validate([
+            'faculty_name' => 'required|string|unique:faculties,name',
+        ]);
+
+        Faculty::create(['name' => $request->faculty_name]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'เพิ่มคณะเรียบร้อยแล้ว');
+    }
+
+    public function storeMajor(Request $request)
+    {
+        $request->validate([
+            'faculty_id' => 'required|exists:faculties,id',
+            'major_name' => 'required|string|unique:majors,name',
+        ]);
+
+        Major::create([
+            'name' => $request->major_name,
+            'faculty_id' => $request->faculty_id,
+        ]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'เพิ่มสาขาเรียบร้อยแล้ว');
+    }
+
+    public function storeAdvisor(Request $request)
+    {
+        $request->validate([
+            'advisor_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'major_id' => 'required|exists:majors,id',
+        ]);
+
+        $advisor = Advisor::create([
+            'name' => $request->advisor_name,
+            'phone' => $request->phone,
+        ]);
+
+        $advisor->majors()->sync([$request->major_id]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'เพิ่มอาจารย์ที่ปรึกษาเรียบร้อยแล้ว');
+    }
+
+    public function destroyFaculty($id)
+    {
+        $faculty = Faculty::findOrFail($id);
+
+        $hasMajors = $faculty->majors()->exists();
+        $hasStudents = Student::where('faculty_id', $faculty->id)->exists();
+
+        if ($hasMajors || $hasStudents) {
+            return redirect()->route('admin.addInfo')
+                ->with('error', 'ลบคณะไม่ได้ เพราะมีสาขาหรือนักศึกษาที่เชื่อมอยู่');
+        }
+
+        $faculty->delete();
+        return redirect()->route('admin.addInfo')->with('success', 'ลบคณะเรียบร้อยแล้ว');
+    }
+
+    public function destroyMajor($id)
+    {
+        $major = Major::findOrFail($id);
+
+        $hasStudents = Student::where('major_id', $major->id)->exists();
+        $hasAdvisorLinks = DB::table('advisor_major')->where('major_id', $major->id)->exists();
+
+        if ($hasStudents || $hasAdvisorLinks) {
+            return redirect()->route('admin.addInfo')
+                ->with('error', 'ลบสาขาไม่ได้ เพราะมีนักศึกษาหรืออาจารย์ที่ปรึกษาที่เชื่อมอยู่');
+        }
+
+        $major->delete();
+        return redirect()->route('admin.addInfo')->with('success', 'ลบสาขาเรียบร้อยแล้ว');
+    }
+
+    public function destroyAdvisor($id)
+    {
+        $advisor = Advisor::findOrFail($id);
+
+        $hasStudents = Student::where('advisor_id', $advisor->id)->exists();
+        $hasMajorLinks = DB::table('advisor_major')->where('advisor_id', $advisor->id)->exists();
+
+        if ($hasStudents || $hasMajorLinks) {
+            return redirect()->route('admin.addInfo')
+                ->with('error', 'ลบอาจารย์ที่ปรึกษาไม่ได้ เพราะมีนักศึกษาหรือสาขาที่เชื่อมอยู่');
+        }
+
+        $advisor->delete();
+        return redirect()->route('admin.addInfo')->with('success', 'ลบอาจารย์ที่ปรึกษาเรียบร้อยแล้ว');
+    }
+
     /**
      * บันทึกข้อมูลนักศึกษาใหม่
      */

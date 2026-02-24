@@ -17,6 +17,10 @@
             <label for="advisor_name" class="form-label">ชื่ออาจารย์ที่ปรึกษา</label>
             <input type="text" name="advisor_name" id="advisor_name" class="form-control" required>
         </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+            <input type="text" name="phone" id="phone" class="form-control" required placeholder="เช่น 0812345678">
+        </div>
         <button type="submit" class="btn btn-success">บันทึก</button>
         <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">กลับ</a>
     </form>

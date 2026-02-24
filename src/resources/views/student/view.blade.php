@@ -591,7 +591,7 @@
                             <input type="text" name="license_alpha[]" class="form-control text-center" placeholder="กข">
                         </div>
                         <div class="col-6 col-md-3">
-                                <input type="text" name="license_number[]" class="form-control text-center numeric-only" placeholder="1234" inputmode="numeric" pattern="\d*">
+                            <input type="text" name="license_number[]" class="form-control text-center numeric-only" placeholder="1234" inputmode="numeric" pattern="[0-9]*">
                         </div>
                         <div class="col-12 col-md-6">
                             <input type="text" name="license_province[]" class="form-control" placeholder="จังหวัด (เช่น ขอนแก่น)">

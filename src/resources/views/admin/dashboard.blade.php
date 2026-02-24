@@ -102,7 +102,7 @@
                             </a>
                         </div>
                         <div class="col-6">
-                            <form action="{{ route('admin.clearAllStudents') }}" method="POST" onsubmit="return confirm('⚠️ ยืนยันการล้างข้อมูลทั้งหมด?')" class="h-100">
+                            <form id="clear-all-form" action="{{ route('admin.clearAllStudents') }}" method="POST" data-export-url="{{ route('admin.export') }}" class="h-100">
                                 @csrf @method('DELETE')
                                 {{-- ✅ ปรับเป็นปุ่มสีแดงอ่อน (bg-danger-subtle) เพื่อให้ข้อความแดงเข้มชัดเจนตลอดเวลา แม้จะเอาเมาส์ไปชี้ --}}
                                 <button type="submit" class="btn w-100 shadow-sm fw-bold py-2 border border-danger text-danger bg-danger-subtle" style="transition: none;">
@@ -341,6 +341,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (qrWrap) {
         qrWrap.classList.remove('d-none');
+    }
+
+    const clearForm = document.getElementById('clear-all-form');
+    if (clearForm) {
+        clearForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (!confirm('⚠️ ยืนยันการล้างข้อมูลทั้งหมด?')) return;
+
+            const exportUrl = clearForm.dataset.exportUrl;
+            if (exportUrl) {
+                const link = document.createElement('a');
+                link.href = exportUrl;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+
+            setTimeout(() => clearForm.submit(), 800);
+        });
     }
 });
 </script>

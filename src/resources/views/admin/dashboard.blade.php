@@ -115,7 +115,10 @@
 
                 {{-- ส่วนที่ 4: ปุ่มจัดการผู้ใช้งาน --}}
                 <div class="col-12 col-md-6 order-4">
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-info text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100">
+                    <a href="{{ route('admin.addInfo') }}" class="btn btn-success text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100">
+                        เพิ่มข้อมูลคณะ/สาขา/อาจารย์
+                    </a>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-info text-white w-100 shadow-sm fw-bold py-2 border-0 d-flex align-items-center justify-content-center text-decoration-none opacity-100 mt-2">
                         จัดการผู้ใช้งาน
                     </a>
                 </div>

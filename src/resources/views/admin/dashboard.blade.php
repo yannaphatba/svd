@@ -24,7 +24,14 @@
     @media (max-width: 768px) {
         .admin-tools-row .btn,
         .admin-tools-row .btn-clear {
-            min-height: 48px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: normal;
+            line-height: 1.15;
+            padding: 0.5rem 0.75rem;
         }
     }
 </style>
